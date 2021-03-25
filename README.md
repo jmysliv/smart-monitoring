@@ -1,2 +1,6 @@
-# smart-monitoring
-Smart monitoring using Raspberry Pi 4
+smart-monitoring
+===
+
+Team:
+[Sebastian Kuśnierz](https://github.com/skusnierz)
+[Jakub Myśliwiec](https://github.com/jmysliv)
