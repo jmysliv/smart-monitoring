@@ -1,16 +1,40 @@
-import numpy as np
 import cv2
+from flask import Flask, render_template, Response, request, jsonify, after_this_request
+import os
+from camera import Camera
+from frame_provider import FrameProvider
+import json
 
-cap = cv2.VideoCapture(0)
+app = Flask(__name__,
+            static_url_path='',
+            static_folder='static',
+            template_folder='templates')
 
-while(cap.isOpened()):
-    ret, frame = cap.read()
 
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    cv2.imshow('frame',frame)
+def generate_frames(frame_provider: FrameProvider):
+    while True:
+        frame = frame_provider.get_frame()
+        _, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
 
-cap.release()
-cv2.destroyAllWindows()
+@app.route('/')
+def index():
+    return render_template('live/index.html')
+
+
+@app.route('/live')
+def live():
+    return render_template('live/index.html')
+
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(Camera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+if __name__ == "__main__":
+    # run server
+    app.run(host='0.0.0.0', port=9002, threaded=True)
