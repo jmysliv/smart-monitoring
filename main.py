@@ -3,6 +3,7 @@ from flask import Flask, render_template, Response, request, jsonify, after_this
 import os
 from camera import Camera
 from frame_provider import FrameProvider
+from object_detector import Detector
 import json
 
 app = Flask(__name__,
@@ -30,9 +31,19 @@ def live():
     return render_template('live/index.html')
 
 
+@app.route('/detection')
+def detection():
+    return render_template('detection/index.html')
+
+
 @app.route('/video_feed')
 def video_feed():
     return Response(generate_frames(Camera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+@app.route('/object_detection')
+def object_detection():
+    return Response(generate_frames(Detector()), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 if __name__ == "__main__":
