@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Smart-Monitoring</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/conf/style.css') }}">
+  <!-- <link rel="stylesheet" href="style.css"> -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark nav">
+    <a class="navbar-brand" href="#">Smart Monitoring</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/configuration">Configuration <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="/live">Live <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="/recordings">Recordings <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="/detection">Live detection <span class="sr-only">(current)</span></a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="config-form">
+    <div class="form-group">
+      <label for="threshold">Threshold</label>
+      <input type="text" class="form-control" id="threshold" value="0.7">
+    </div>
+    <div class="form-group">
+      <label for="record-length">Record length in seconds</label>
+      <input type="text" class="form-control" id="record_length" value="10">
+    </div>
+    <div class="form-group">
+      <label for="observed-objects">Observed Objects</label>
+      <input type="text" class="form-control" id="observed_objects" value="cell phone">
+    </div>
+    <div class="form-group">
+      <label for="width">Live frame width</label>
+      <input type="text" class="form-control" id="width" value="800">
+    </div>
+    <div class="form-group">
+      <label for="height">Live frame height</label>
+      <input type="text" class="form-control" id="height" value="480">
+    </div>
+    <button onclick="submit();" class="btn btn-primary text-center">Submit</button>
+  </div>
+
+
+  <script type="text/javascript">
+
+    window.onload = async function () {
+      const req = await fetch("{{url_for('configure')}}", {
+        method: 'GET'
+      });
+
+      const data = await req.json();
+      for (let key in data) {
+        console.log(data[key])
+        if (key === "observed_objects") {
+          document.getElementById(key).value = data[key].join(", ");
+        } else {
+          document.getElementById(key).value = data[key];
+        }
+      }
+    };
+
+    async function postData(url = '', data = {}) {
+      const response = await fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: JSON.stringify(data)
+      });
+      return response.json();
+    }
+
+    function submit() {
+      const threshold = document.getElementById("threshold").value;
+      const recordLength = document.getElementById("record_length").value;
+      const observedObjects = document.getElementById("observed_objects").value;
+      const width = document.getElementById("width").value;
+      const height = document.getElementById("height").value;
+      fetch("{{url_for('configure')}}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          threshold,
+          "record_length": recordLength,
+          "observed_objects": observedObjects.split(",").map(item => item.trim()),
+          width,
+          height
+        })
+      })
+        .then(data => {
+          console.log(data);
+        });
+    }
+  </script>
+</body>
+
+</html>
