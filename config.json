@@ -1,1 +1,1 @@
-{"threshold": "0.7", "record_length": "5", "observed_objects": ["cell phone"], "width": "640", "height": "480"}
+{"threshold": "0.7", "record_length": "5", "observed_objects": ["cell phone"], "width": "640", "height": "480", "button_pin": "2"}

@@ -64,6 +64,10 @@
       <label for="height">Live frame height</label>
       <input type="text" class="form-control" id="height" value="480">
     </div>
+    <div class="form-group">
+      <label for="height">Pin button</label>
+      <input type="text" class="form-control" id="button_pin" value="2">
+    </div>
     <button onclick="submit();" class="btn btn-primary text-center">Submit</button>
   </div>
 
@@ -71,11 +75,12 @@
   <script type="text/javascript">
 
     window.onload = async function () {
-      const req = await fetch("{{url_for('configure')}}", {
+      const req = fetch("{{url_for('configure')}}", {
         method: 'GET'
       });
-
-      const data = await req.json();
+      const res = await req;
+      const data = await res.json();
+      console.log(data);
       for (let key in data) {
         console.log(data[key])
         if (key === "observed_objects") {
@@ -104,6 +109,7 @@
       const observedObjects = document.getElementById("observed_objects").value;
       const width = document.getElementById("width").value;
       const height = document.getElementById("height").value;
+      const button = document.getElementById("button_pin").value;
       fetch("{{url_for('configure')}}", {
         method: 'POST',
         headers: {
@@ -113,6 +119,7 @@
           threshold,
           "record_length": recordLength,
           "observed_objects": observedObjects.split(",").map(item => item.trim()),
+          "button_pin": button,
           width,
           height
         })

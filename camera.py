@@ -14,13 +14,13 @@ class Camera(FrameProvider):
 
         while self.get_frame() is None:
                 time.sleep(0)
-        
+
     def get_frame(self):
         return Camera.frame
 
     @staticmethod
     def frames():
-        camera = cv2.VideoCapture(0)
+        camera = cv2.VideoCapture("/dev/video1")
         if not camera.isOpened():
             raise RuntimeError('Could not start camera.')
         while True:
