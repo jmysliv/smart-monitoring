@@ -6,18 +6,26 @@ from object_detector import Detector
 from frame_provider import FrameProvider
 from recorder import Recorder
 import json
+from time import sleep
+import threading
+from flask import jsonify
+from motor import Motor
 
 app = Flask(__name__,
             static_url_path='',
             static_folder='static',
             template_folder='templates')
 
+motor = None
 
 def load_config():
     with open('config.json') as json_file:
         data = json.load(json_file)
         Detector.set_threshold(float(data['threshold']))
-        Recorder(set(data['observed_objects']), int(data['record_length']))
+        Recorder.set_observed_objects(set(data['observed_objects']))
+        Recorder.set_record_length(int(data['record_length']))
+        Recorder.set_button(int(data['button_pin']))
+    Recorder()
     Camera()
     Detector()
 
@@ -68,6 +76,15 @@ def video_feed():
 def object_detection():
     return Response(generate_frames(Detector()), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route('/move_left', methods=['POST'])
+def move_left():
+    motor.move_left()
+    return "OK"
+
+@app.route('/move_right', methods=['POST'])
+def move_right():
+    motor.move_right()
+    return "OK"
 
 @app.route('/configure', methods=['GET', 'POST'])
 def configure():
@@ -85,10 +102,14 @@ def configure():
     else:
         with open('config.json') as json_file:
             data = json.load(json_file)
-        return data
+        return jsonify(data)
 
 
-if __name__ == "__main__":
-    # run server
-    load_config()
-    app.run(host='0.0.0.0', port=9002, threaded=True)
+try:
+    if __name__ == "__main__":
+        motor = Motor(17, 1)
+        # run server
+        load_config()
+        app.run(host='0.0.0.0', port=9002, threaded=True)
+except KeyboardInterrupt:
+    motor.cleanup()
